@@ -1,38 +1,53 @@
+const commonsFileUrl = (fileName: string) =>
+  `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}`;
+
 export const cars = [
   {
-    id: "sedan",
-    name: "سيدان",
-    seats: "4 مقاعد",
-    ac: "تكييف كامل",
-    price: "450 ج.م / اليوم",
-    image:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80"
+    id: "toyota-hiace-high-roof",
+    name: "تويوتا هاي إس سقف عالي",
+    seats: "14 راكب",
+    ac: "مكيف بالكامل",
+    price: "مثالي للرحلات الجماعية",
+    image: commonsFileUrl("2025 Toyota HiAce front (with barn doors).jpg")
   },
   {
-    id: "suv",
-    name: "SUV",
-    seats: "6 مقاعد",
-    ac: "تكييف كامل",
-    price: "650 ج.م / اليوم",
-    image:
-      "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=900&q=80"
+    id: "toyota-hiace-standard",
+    name: "تويوتا هاي إس عادي",
+    seats: "12 راكب",
+    ac: "مكيف بالكامل",
+    price: "مثالي للرحلات العائلية",
+    image: commonsFileUrl("2019 Toyota HiAce (front).jpg")
   },
   {
-    id: "vip-van",
-    name: "VIP Van",
-    seats: "10 مقاعد",
-    ac: "تكييف بانورامي",
-    price: "900 ج.م / اليوم",
-    image:
-      "https://images.unsplash.com/photo-1502872364588-894d37d99971?auto=format&fit=crop&w=1200&q=80"
+    id: "toyota-coaster",
+    name: "تويوتا كوستر",
+    seats: "28 راكب",
+    ac: "مكيف قوي",
+    price: "مثالي للمجموعات الكبيرة",
+    image: commonsFileUrl("Toyota Coaster XZB70R 6.9m.jpg")
   },
   {
-    id: "luxury",
-    name: "Luxury Cars",
-    seats: "4 مقاعد",
-    ac: "تكييف متطور",
-    price: "1200 ج.م / اليوم",
-    image:
-      "https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1200&q=80"
+    id: "hyundai-h1",
+    name: "Hyundai H1",
+    seats: "7 ركاب",
+    ac: "مكيف ممتاز",
+    price: "مناسب للرحلات الخاصة",
+    image: commonsFileUrl("Hyundai H1 Van 2019.jpg")
+  },
+  {
+    id: "toyota-camry",
+    name: "تويوتا كامري",
+    seats: "4 ركاب",
+    ac: "راحة وسلاسة",
+    price: "مناسب لرحلات كبار الشخصيات",
+    image: commonsFileUrl("Moscow, Toyota Camry (XV70), Aug 2025 01.jpg")
+  },
+  {
+    id: "mercedes-e-class",
+    name: "مرسيدس E-Class",
+    seats: "4 ركاب",
+    ac: "فخامة كاملة",
+    price: "VIP / Business travel",
+    image: commonsFileUrl("Mercedes-Benz E 200 d AMG Line (W 214) – f 05072025.jpg")
   }
 ];
