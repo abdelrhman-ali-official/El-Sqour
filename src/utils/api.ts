@@ -93,6 +93,41 @@ export type AvailableRoutesParams = {
   passengerCount: number;
 };
 
+export type CorporateRoute = {
+  id?: number;
+  pickupLocation: string;
+  destination: string;
+  pickupTime: string;
+  dropoffTime: string;
+  workingDays: string;
+};
+
+export type CorporateTransportationRequest = {
+  id?: number;
+  trackingCode: string;
+  companyName: string;
+  companyIndustry?: string;
+  companyAddress?: string;
+  contactPersonName?: string;
+  businessEmail?: string;
+  phoneNumber?: string;
+  totalEmployees?: number;
+  employeesRequiringTransportation?: number;
+  serviceType?: number;
+  additionalNotes?: string;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+  routes: CorporateRoute[];
+};
+
+export type CorporateRequestsResponse = {
+  pageIndex: number;
+  pageSize: number;
+  totalCount: number;
+  data: CorporateTransportationRequest[];
+};
+
 let governoratesCache: Governorate[] | null = null;
 let governoratesPromise: Promise<Governorate[]> | null = null;
 let vehicleTypesCache: VehicleType[] | null = null;
@@ -135,6 +170,10 @@ async function fetchJsonWithAuth<T>(path: string, token: string, init?: RequestI
 async function readApiError(response: Response) {
   try {
     const body = await response.json();
+    if (body?.errors && typeof body.errors === "object") {
+      const details = Object.values(body.errors).flat().filter(Boolean);
+      if (details.length) return details.join("، ");
+    }
     return body?.message || body?.title || "تعذر إتمام العملية.";
   } catch {
     return "تعذر إتمام العملية.";
@@ -341,4 +380,63 @@ export async function fetchMyTripBookings(token: string, pageIndex = 1, pageSize
   }
 
   return (await response.json()) as TripBookingsResponse;
+}
+
+export type CorporateTransportationPayload = Omit<
+  CorporateTransportationRequest,
+  "id" | "trackingCode" | "status" | "createdAt" | "updatedAt"
+>;
+
+export async function createCorporateTransportationRequest(payload: CorporateTransportationPayload) {
+  const response = await fetch(`${API_BASE_URL}/api/CorporateTransportationRequests`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as CorporateTransportationRequest;
+}
+
+export async function trackCorporateTransportationRequest(trackingCode: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/api/CorporateTransportationRequests/track/${encodeURIComponent(trackingCode)}`
+  );
+
+  if (!response.ok) {
+    throw new Error(response.status === 404 ? "لم نعثر على طلب بهذا الرقم." : await readApiError(response));
+  }
+  return (await response.json()) as CorporateTransportationRequest;
+}
+
+export async function fetchCorporateTransportationRequests(
+  token: string,
+  pageIndex = 1,
+  pageSize = 10,
+  filters: { status?: number; serviceType?: number; fromDate?: string; toDate?: string } = {}
+) {
+  const url = new URL(`${API_BASE_URL}/api/CorporateTransportationRequests/admin`);
+  url.searchParams.set("pageIndex", String(pageIndex));
+  url.searchParams.set("pageSize", String(pageSize));
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") url.searchParams.set(key, String(value));
+  });
+
+  const response = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as CorporateRequestsResponse;
+}
+
+export async function fetchCorporateTransportationRequest(token: string, id: number) {
+  return fetchJsonWithAuth<CorporateTransportationRequest>(
+    `/api/CorporateTransportationRequests/admin/${id}`,
+    token
+  );
+}
+
+export async function updateCorporateTransportationStatus(token: string, id: number, status: number) {
+  await fetchJsonWithAuth<void>(`/api/CorporateTransportationRequests/admin/${id}/status`, token, {
+    method: "PUT",
+    body: JSON.stringify({ status })
+  });
 }

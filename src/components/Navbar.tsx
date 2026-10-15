@@ -10,7 +10,8 @@ const links = [
   { label: "الرحلات", href: "/#trips" },
   { label: "السيارات", href: "/#cars" },
   { label: "من نحن", href: "/#about" },
-  { label: "تواصل معنا", href: "/#contact" }
+  { label: "تواصل معنا", href: "/#contact" },
+  { label: "نقل الموظفين", href: "/corporate-transportation-request" }
 ];
 
 export default function Navbar() {

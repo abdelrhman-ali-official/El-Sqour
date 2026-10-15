@@ -28,11 +28,13 @@ import {
   deleteTripRoute,
   deleteVehicleType,
   fetchGovernorates,
+  fetchCorporateTransportationRequests,
   fetchTripBookingsAdmin,
   fetchTripDashboard,
   fetchTripRoutes,
   fetchVehicleTypes,
   type Governorate,
+  type CorporateTransportationRequest,
   type TripBooking,
   type TripDashboardSummary,
   type TripDashboardTopRoute,
@@ -40,6 +42,7 @@ import {
   type TripRoute,
   type VehicleType,
   updateGovernorate,
+  updateCorporateTransportationStatus,
   updateTripBookingStatus,
   updateTripRoute,
   updateVehicleType
@@ -71,6 +74,26 @@ const bookingStatusOptions = [
   { value: 2, label: "Confirmed" },
   { value: 3, label: "Cancelled" }
 ];
+
+const corporateStatusOptions = [
+  { value: 1, label: "Pending" },
+  { value: 2, label: "UnderReview" },
+  { value: 3, label: "Quoted" },
+  { value: 4, label: "Accepted" },
+  { value: 5, label: "Rejected" },
+  { value: 6, label: "Cancelled" }
+];
+
+const corporateStatusMeta: Record<number, { label: string; className: string }> = {
+  1: { label: "Pending", className: "bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20" },
+  2: { label: "Under review", className: "bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20" },
+  3: { label: "Quoted", className: "bg-violet-500/10 text-violet-700 ring-1 ring-violet-500/20" },
+  4: { label: "Accepted", className: "bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20" },
+  5: { label: "Rejected", className: "bg-rose-500/10 text-rose-700 ring-1 ring-rose-500/20" },
+  6: { label: "Cancelled", className: "bg-slate-500/10 text-slate-700 ring-1 ring-slate-500/20" }
+};
+
+const corporateAllowedTransitions: Record<number, number[]> = { 1: [2, 6], 2: [3, 5, 6], 3: [4, 5] };
 
 const statusMeta: Record<number, { label: string; className: string }> = {
   1: { label: "Pending", className: "bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20" },
@@ -228,12 +251,14 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const [dashboard, setDashboard] = useState<TripDashboardSummary | null>(null);
   const [governorates, setGovernorates] = useState<Governorate[]>([]);
+  const [corporateRequests, setCorporateRequests] = useState<CorporateTransportationRequest[]>([]);
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
   const [tripRoutes, setTripRoutes] = useState<TripRoute[]>([]);
   const [bookings, setBookings] = useState<TripBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [routesLoading, setRoutesLoading] = useState(false);
+  const [corporateLoading, setCorporateLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [bookingPageIndex, setBookingPageIndex] = useState(1);
@@ -242,7 +267,10 @@ export default function AdminDashboard() {
   const [routePageIndex, setRoutePageIndex] = useState(1);
   const [routePageSize, setRoutePageSize] = useState(6);
   const [routeTotalCount, setRouteTotalCount] = useState(0);
+  const [corporateRequestPage, setCorporateRequestPage] = useState(1);
+  const [corporateRequestTotal, setCorporateRequestTotal] = useState(0);
   const [statusDrafts, setStatusDrafts] = useState<Record<number, number>>({});
+  const [corporateStatusDrafts, setCorporateStatusDrafts] = useState<Record<number, number>>({});
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [governorateForm, setGovernorateForm] = useState<GovernorateFormState>({
     id: null,
@@ -266,6 +294,24 @@ export default function AdminDashboard() {
   const [tripRouteSearch, setTripRouteSearch] = useState("");
 
   const token = user?.token ?? "";
+
+  const loadCorporateRequests = useCallback(async (pageIndex = 1) => {
+    if (!token) return;
+    setCorporateLoading(true);
+    try {
+      const result = await fetchCorporateTransportationRequests(token, pageIndex, 10);
+      setCorporateRequests(result.data);
+      setCorporateRequestPage(result.pageIndex || pageIndex);
+      setCorporateRequestTotal(result.totalCount);
+      setCorporateStatusDrafts(
+        Object.fromEntries(result.data.map((request) => [request.id ?? 0, request.status]))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "تعذر تحميل طلبات نقل الموظفين.");
+    } finally {
+      setCorporateLoading(false);
+    }
+  }, [token]);
 
   const loadData = useCallback(
     async (pageIndex = 1, silent = false) => {
@@ -337,6 +383,10 @@ export default function AdminDashboard() {
   useEffect(() => {
     void loadRoutes(routePageIndex, false);
   }, [loadRoutes, routePageIndex, token]);
+
+  useEffect(() => {
+    void loadCorporateRequests();
+  }, [loadCorporateRequests]);
 
   const summaryCards = useMemo(
     () => [
@@ -636,6 +686,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleCorporateStatusSave = async (requestId: number, currentStatus: number) => {
+    if (!token) return;
+    const nextStatus = corporateStatusDrafts[requestId];
+    if (!nextStatus || nextStatus === currentStatus) return;
+    if (!corporateAllowedTransitions[currentStatus]?.includes(nextStatus)) {
+      setError("انتقال حالة طلب نقل الموظفين غير مسموح.");
+      return;
+    }
+
+    setBusyKey(`corporate-${requestId}`);
+    setError(null);
+    setSuccess(null);
+    try {
+      await updateCorporateTransportationStatus(token, requestId, nextStatus);
+      setSuccess("تم تحديث حالة طلب نقل الموظفين بنجاح.");
+      await loadCorporateRequests(corporateRequestPage);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "تعذر تحديث حالة طلب نقل الموظفين.");
+    } finally {
+      setBusyKey(null);
+    }
+  };
+
   const handleRouteEdit = (route: TripRoute) => {
     setTripRouteForm({
       id: String(route.id),
@@ -650,6 +723,7 @@ export default function AdminDashboard() {
   const topRoutes: TripDashboardTopRoute[] = dashboard?.topRoutes ?? [];
   const topVehicleTypes: TripDashboardTopVehicleType[] = dashboard?.topVehicleTypes ?? [];
   const totalBookingPages = Math.max(1, Math.ceil(bookingTotalCount / bookingPageSize));
+  const totalCorporatePages = Math.max(1, Math.ceil(corporateRequestTotal / 10));
 
   return (
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(255,43,43,0.04),_transparent_34%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)] pb-16">
@@ -1399,6 +1473,53 @@ export default function AdminDashboard() {
             <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-sm text-slate-500">
               لا توجد حجوزات في هذه الصفحة.
             </div>
+          )}
+        </SectionCard>
+
+        <SectionCard
+          title="طلبات نقل الموظفين"
+          description="طلبات الشركات المرسلة من الصفحة العامة وإدارة حالتها وفق دورة الاعتماد."
+          icon={<Truck className="h-5 w-5" />}
+        >
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
+            <p>الصفحة {corporateRequestPage} من {totalCorporatePages} · {corporateRequestTotal} طلب</p>
+            <div className="flex gap-2">
+              <button onClick={() => loadCorporateRequests(Math.max(1, corporateRequestPage - 1))} disabled={corporateRequestPage <= 1} className="rounded-full border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50">السابق</button>
+              <button onClick={() => loadCorporateRequests(Math.min(totalCorporatePages, corporateRequestPage + 1))} disabled={corporateRequestPage >= totalCorporatePages} className="rounded-full border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50">التالي</button>
+            </div>
+          </div>
+          {corporateLoading ? (
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-sm text-slate-500">جاري تحميل طلبات نقل الموظفين...</div>
+          ) : corporateRequests.length ? (
+            <div className="space-y-3">
+              {corporateRequests.map((request) => {
+                const requestId = request.id ?? 0;
+                const meta = corporateStatusMeta[request.status] ?? corporateStatusMeta[1];
+                const allowedStatuses = [request.status, ...(corporateAllowedTransitions[request.status] ?? [])];
+                return (
+                  <div key={requestId} className="flex flex-col gap-4 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-brand-dark">{request.companyName}</p>
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${meta.className}`}>{meta.label}</span>
+                      </div>
+                      <p className="mt-1 break-all text-xs text-slate-500">{request.trackingCode} · {request.contactPersonName || "بدون مسؤول"} · {request.businessEmail || "بدون بريد"}</p>
+                      <p className="mt-2 text-sm text-slate-600">{request.routes?.length ?? 0} مسار · {request.employeesRequiringTransportation ?? 0} موظف يحتاجون للنقل</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <select value={corporateStatusDrafts[requestId] ?? request.status} onChange={(event) => setCorporateStatusDrafts((previous) => ({ ...previous, [requestId]: Number(event.target.value) }))} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none">
+                        {corporateStatusOptions.filter((option) => allowedStatuses.includes(option.value)).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                      </select>
+                      <button onClick={() => handleCorporateStatusSave(requestId, request.status)} disabled={busyKey === `corporate-${requestId}`} className="inline-flex items-center gap-2 rounded-2xl bg-brand-red px-4 py-2 text-sm font-semibold text-white shadow-soft disabled:cursor-not-allowed disabled:opacity-70">
+                        {busyKey === `corporate-${requestId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-sm text-slate-500">لا توجد طلبات نقل موظفين.</div>
           )}
         </SectionCard>
       </div>

@@ -7,6 +7,7 @@ import BookingSuccess from "./pages/BookingSuccess";
 import MyTripsPage from "./pages/MyTripsPage";
 import Footer from "./sections/Footer";
 import AdminDashboard from "./pages/AdminDashboard";
+import CorporateTransportationRequestPage from "./pages/CorporateTransportationRequestPage";
 import { useAuth } from "./context/AuthContext";
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -33,6 +34,7 @@ function AppShell() {
           <Route path="/booking" element={<BookingPage />} />
           <Route path="/booking/success" element={<BookingSuccess />} />
           <Route path="/my-trips" element={<MyTripsPage />} />
+          <Route path="/corporate-transportation-request" element={<CorporateTransportationRequestPage />} />
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route
             path="/admin/dashboard"
