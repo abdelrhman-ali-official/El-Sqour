@@ -29,9 +29,9 @@ function formatDate(value?: string) {
 
 function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string | number }) {
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-4">
+    <div className="flex min-h-[5.5rem] flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-4">
       <div className="flex items-center gap-2 text-xs text-slate-500">{icon}<span>{label}</span></div>
-      <p className="mt-2 break-words text-sm font-semibold text-slate-900">{value || "-"}</p>
+      <p className="mt-2 break-words text-sm font-semibold leading-6 text-slate-900">{value ?? "-"}</p>
     </div>
   );
 }
@@ -74,9 +74,9 @@ export default function CorporateTransportationRequestDetailsPage() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,43,43,0.05),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)] pb-16">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <Link to="/admin/dashboard" className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-red/30 hover:text-brand-red"><ArrowLeft className="h-4 w-4" /> العودة للوحة الإدارة</Link>
-          <p className="text-sm font-semibold text-slate-500">تفاصيل طلب نقل الموظفين</p>
+        <div className="mb-6 flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Link to="/admin/dashboard" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-red/30 hover:text-brand-red sm:w-auto"><ArrowLeft className="h-4 w-4" /> العودة للوحة الإدارة</Link>
+          <p className="text-right text-sm font-semibold text-slate-500">تفاصيل طلب نقل الموظفين</p>
         </div>
 
         {loading ? (
@@ -87,7 +87,7 @@ export default function CorporateTransportationRequestDetailsPage() {
           <div className="space-y-6">
             <section className="rounded-[2rem] bg-slate-950 p-6 text-white shadow-lift sm:p-8">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                <div><p className="text-sm text-white/60">طلب رقم #{request.id}</p><h1 className="mt-2 text-2xl font-semibold">{request.companyName}</h1><p className="mt-2 break-all text-sm text-white/60">Tracking code: {request.trackingCode}</p></div>
+                <div className="min-w-0"><p className="text-sm text-white/60">طلب رقم #{request.id}</p><h1 className="mt-2 break-words text-2xl font-semibold leading-tight">{request.companyName}</h1><p className="mt-2 break-all text-sm text-white/60">Tracking code: {request.trackingCode}</p></div>
                 <span className={`w-fit rounded-full px-4 py-2 text-sm font-semibold ring-1 ${status?.className}`}>{status?.label}</span>
               </div>
               <div className="mt-6 grid gap-3 text-sm text-white/70 sm:grid-cols-2"><p className="flex items-center gap-2"><CalendarDays className="h-4 w-4" /> الإنشاء: {formatDate(request.createdAt)}</p><p className="flex items-center gap-2"><Clock3 className="h-4 w-4" /> آخر تحديث: {formatDate(request.updatedAt)}</p></div>

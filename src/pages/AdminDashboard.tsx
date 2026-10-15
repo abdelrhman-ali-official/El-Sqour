@@ -4,8 +4,10 @@ import {
   BarChart3,
   CalendarCheck2,
   CircleDollarSign,
+  FileText,
   Loader2,
   MapPin,
+  Menu,
   PencilLine,
   Plus,
   RefreshCw,
@@ -14,7 +16,8 @@ import {
   ShieldCheck,
   Trash2,
   Truck,
-  Users
+  Users,
+  X
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -95,6 +98,11 @@ const corporateStatusMeta: Record<number, { label: string; className: string }> 
 
 const corporateAllowedTransitions: Record<number, number[]> = { 1: [2, 6], 2: [3, 5, 6], 3: [4, 5] };
 
+function getCorporateStatusOptions(currentStatus: number) {
+  const availableStatuses = new Set([currentStatus, ...(corporateAllowedTransitions[currentStatus] ?? [])]);
+  return corporateStatusOptions.filter((option) => availableStatuses.has(option.value));
+}
+
 const statusMeta: Record<number, { label: string; className: string }> = {
   1: { label: "Pending", className: "bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20" },
   2: { label: "Confirmed", className: "bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20" },
@@ -120,16 +128,18 @@ function SectionCard({
   description,
   icon,
   children,
-  action
+  action,
+  id
 }: {
   title: string;
   description?: string;
   icon: React.ReactNode;
   children: React.ReactNode;
   action?: React.ReactNode;
+  id?: string;
 }) {
   return (
-    <section className={sectionChrome}>
+    <section id={id} className={sectionChrome}>
       <div className="mb-6 flex flex-col gap-4 border-b border-slate-200/70 px-6 pt-6 pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-start gap-3 text-right">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-red/10 text-brand-red ring-1 ring-brand-red/10">
@@ -292,6 +302,7 @@ export default function AdminDashboard() {
   const [governorateSearch, setGovernorateSearch] = useState("");
   const [vehicleTypeSearch, setVehicleTypeSearch] = useState("");
   const [tripRouteSearch, setTripRouteSearch] = useState("");
+  const [adminNavOpen, setAdminNavOpen] = useState(false);
 
   const token = user?.token ?? "";
 
@@ -724,12 +735,44 @@ export default function AdminDashboard() {
   const topVehicleTypes: TripDashboardTopVehicleType[] = dashboard?.topVehicleTypes ?? [];
   const totalBookingPages = Math.max(1, Math.ceil(bookingTotalCount / bookingPageSize));
   const totalCorporatePages = Math.max(1, Math.ceil(corporateRequestTotal / 10));
+  const adminNavItems = [
+    { href: "#admin-overview", label: "نظرة عامة", icon: <BarChart3 className="h-4 w-4" /> },
+    { href: "#admin-reference", label: "البيانات الأساسية", icon: <RouteIcon className="h-4 w-4" /> },
+    { href: "#admin-bookings", label: "الحجوزات", icon: <CalendarCheck2 className="h-4 w-4" /> },
+    { href: "#admin-corporate", label: "طلبات الشركات", icon: <FileText className="h-4 w-4" /> }
+  ];
 
   return (
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(255,43,43,0.04),_transparent_34%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)] pb-16">
       <div className="absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[linear-gradient(135deg,rgba(15,23,42,1),rgba(15,23,42,0.94),rgba(255,43,43,0.40))]" />
 
-      <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex max-w-[90rem] flex-col gap-5 px-3 py-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm lg:hidden">
+          <p className="text-sm font-semibold text-brand-dark">تنقل لوحة الإدارة</p>
+          <button type="button" onClick={() => setAdminNavOpen((open) => !open)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-red text-white" aria-label="فتح قائمة لوحة الإدارة">
+            {adminNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
+          <aside className={`${adminNavOpen ? "block" : "hidden"} sticky top-4 z-20 lg:block`}>
+            <div className="rounded-[1.75rem] border border-slate-200/80 bg-white/90 p-3 shadow-soft backdrop-blur">
+              <p className="px-3 pb-3 pt-2 text-xs font-semibold uppercase tracking-wider text-slate-400">أقسام الإدارة</p>
+              <nav className="space-y-1">
+                {adminNavItems.map((item) => (
+                  <a key={item.href} href={item.href} onClick={() => setAdminNavOpen(false)} className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-red/10 hover:text-brand-red">
+                    {item.icon}
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+              <div className="mt-4 border-t border-slate-200/80 pt-3">
+                <Link to="/" className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-brand-dark"><ArrowLeft className="h-4 w-4" /> الرجوع للموقع</Link>
+              </div>
+            </div>
+          </aside>
+
+          <div className="min-w-0 space-y-6">
         <motion.section
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -799,6 +842,7 @@ export default function AdminDashboard() {
 
         <div className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
           <SectionCard
+            id="admin-overview"
             title="مؤشرات التشغيل"
             description="نظرة سريعة على التوزيع الحالي للحجوزات والعائدات وأهم المسارات النشطة."
             icon={<BarChart3 className="h-5 w-5" />}
@@ -909,6 +953,7 @@ export default function AdminDashboard() {
 
         <div className="grid gap-6 xl:grid-cols-2">
           <SectionCard
+            id="admin-reference"
             title="إدارة المحافظات"
             description="إضافة، تعديل، وحذف المحافظات المستخدمة في المسارات."
             icon={<MapPin className="h-5 w-5" />}
@@ -1361,6 +1406,7 @@ export default function AdminDashboard() {
         </SectionCard>
 
         <SectionCard
+          id="admin-bookings"
           title="حجوزات الإدارة"
           description="استعراض الحجوزات وتغيير الحالة مباشرة من لوحة الإدارة."
           icon={<CalendarCheck2 className="h-5 w-5" />}
@@ -1477,6 +1523,7 @@ export default function AdminDashboard() {
         </SectionCard>
 
         <SectionCard
+          id="admin-corporate"
           title="طلبات نقل الموظفين"
           description="طلبات الشركات المرسلة من الصفحة العامة وإدارة حالتها وفق دورة الاعتماد."
           icon={<Truck className="h-5 w-5" />}
@@ -1495,7 +1542,6 @@ export default function AdminDashboard() {
               {corporateRequests.map((request) => {
                 const requestId = request.id ?? 0;
                 const meta = corporateStatusMeta[request.status] ?? corporateStatusMeta[1];
-                const allowedStatuses = [request.status, ...(corporateAllowedTransitions[request.status] ?? [])];
                 return (
                   <div key={requestId} className="flex flex-col gap-4 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
                     <div className="min-w-0">
@@ -1508,7 +1554,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <select value={corporateStatusDrafts[requestId] ?? request.status} onChange={(event) => setCorporateStatusDrafts((previous) => ({ ...previous, [requestId]: Number(event.target.value) }))} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none">
-                        {corporateStatusOptions.map((option) => <option key={option.value} value={option.value} disabled={!allowedStatuses.includes(option.value) && option.value !== request.status}>{option.label}</option>)}
+                        {getCorporateStatusOptions(request.status).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                       </select>
                       <Link to={`/admin/corporate-transportation-requests/${requestId}`} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-red/30 hover:text-brand-red">التفاصيل</Link>
                       <button onClick={() => handleCorporateStatusSave(requestId, request.status)} disabled={busyKey === `corporate-${requestId}`} className="inline-flex items-center gap-2 rounded-2xl bg-brand-red px-4 py-2 text-sm font-semibold text-white shadow-soft disabled:cursor-not-allowed disabled:opacity-70">
@@ -1523,6 +1569,8 @@ export default function AdminDashboard() {
             <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center text-sm text-slate-500">لا توجد طلبات نقل موظفين.</div>
           )}
         </SectionCard>
+          </div>
+        </div>
       </div>
     </div>
   );
