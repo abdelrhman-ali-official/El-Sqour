@@ -754,25 +754,39 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
-          <aside className={`${adminNavOpen ? "block" : "hidden"} sticky top-4 z-20 lg:block`}>
-            <div className="rounded-[1.75rem] border border-slate-200/80 bg-white/90 p-3 shadow-soft backdrop-blur">
-              <p className="px-3 pb-3 pt-2 text-xs font-semibold uppercase tracking-wider text-slate-400">أقسام الإدارة</p>
-              <nav className="space-y-1">
+        {adminNavOpen ? <button type="button" aria-label="إغلاق قائمة لوحة الإدارة" onClick={() => setAdminNavOpen(false)} className="fixed inset-0 z-30 bg-slate-950/45 lg:hidden" /> : null}
+
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
+          <aside className={`${adminNavOpen ? "translate-x-0" : "translate-x-full"} fixed inset-y-0 right-0 z-40 w-[18rem] transition-transform duration-200 lg:sticky lg:top-4 lg:order-2 lg:block lg:w-auto lg:translate-x-0`}>
+            <div className="flex h-full flex-col overflow-hidden border-l border-white/10 bg-slate-950/95 p-4 text-white shadow-lift backdrop-blur-xl lg:min-h-[calc(100vh-2rem)] lg:rounded-[2rem] lg:border lg:border-white/10">
+              <div className="border-b border-white/10 px-2 pb-5 text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-brand-red/40 bg-white/10 p-2 shadow-soft">
+                  <img src="/logo.png" alt="الصقور" className="h-full w-full rounded-xl object-cover" />
+                </div>
+                <p className="mt-3 text-base font-semibold">لوحة التحكم</p>
+                <p className="mt-1 text-xs text-white/50">إدارة منصة الصقور</p>
+              </div>
+              <p className="px-2 pb-3 pt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/40">أقسام الإدارة</p>
+              <nav className="space-y-2">
                 {adminNavItems.map((item) => (
-                  <a key={item.href} href={item.href} onClick={() => setAdminNavOpen(false)} className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-slate-600 transition hover:bg-brand-red/10 hover:text-brand-red">
+                  <a key={item.href} href={item.href} onClick={() => setAdminNavOpen(false)} className="group flex items-center gap-3 rounded-2xl border border-transparent px-3 py-3 text-sm font-semibold text-white/70 transition hover:border-brand-red/30 hover:bg-brand-red/10 hover:text-white">
                     {item.icon}
                     {item.label}
                   </a>
                 ))}
               </nav>
-              <div className="mt-4 border-t border-slate-200/80 pt-3">
-                <Link to="/" className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-brand-dark"><ArrowLeft className="h-4 w-4" /> الرجوع للموقع</Link>
+              <div className="mt-auto border-t border-white/10 pt-4">
+                <div className="mb-3 rounded-2xl bg-white/5 px-3 py-3 text-right">
+                  <p className="text-sm font-semibold text-white">{user?.displayName || "Admin"}</p>
+                  <p className="mt-1 truncate text-xs text-white/45">{user?.email || "admin@sqour"}</p>
+                </div>
+                <Link to="/" className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"><ArrowLeft className="h-4 w-4" /> الرجوع للموقع</Link>
+                <button onClick={logout} className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-right text-sm font-semibold text-white/70 transition hover:bg-brand-red/10 hover:text-white">تسجيل الخروج</button>
               </div>
             </div>
           </aside>
 
-          <div className="min-w-0 space-y-6">
+          <div className="min-w-0 space-y-6 lg:order-1">
         <motion.section
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
