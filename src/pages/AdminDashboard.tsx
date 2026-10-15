@@ -747,7 +747,7 @@ export default function AdminDashboard() {
       <div className="absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[linear-gradient(135deg,rgba(15,23,42,1),rgba(15,23,42,0.94),rgba(255,43,43,0.40))]" />
 
       <div className="relative mx-auto flex max-w-[90rem] flex-col gap-5 px-3 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm lg:hidden">
+        <div className="sticky top-0 z-30 flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-soft backdrop-blur lg:hidden">
           <p className="text-sm font-semibold text-brand-dark">تنقل لوحة الإدارة</p>
           <button type="button" onClick={() => setAdminNavOpen((open) => !open)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-red text-white" aria-label="فتح قائمة لوحة الإدارة">
             {adminNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -757,7 +757,7 @@ export default function AdminDashboard() {
         {adminNavOpen ? <button type="button" aria-label="إغلاق قائمة لوحة الإدارة" onClick={() => setAdminNavOpen(false)} className="fixed inset-0 z-30 bg-slate-950/45 lg:hidden" /> : null}
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start lg:gap-8">
-          <aside className={`${adminNavOpen ? "translate-x-0" : "translate-x-full"} fixed inset-y-0 right-0 z-40 w-[18rem] transition-transform duration-200 lg:sticky lg:top-6 lg:order-2 lg:block lg:h-[calc(100vh-3rem)] lg:w-auto lg:translate-x-0`}>
+          <aside className={`${adminNavOpen ? "translate-x-0" : "translate-x-full"} fixed inset-y-0 right-0 z-40 w-[18rem] transition-transform duration-200 lg:sticky lg:top-4 lg:order-2 lg:block lg:h-[calc(100vh-2rem)] lg:w-auto lg:translate-x-0`}>
             <div className="flex h-full flex-col overflow-y-auto border-l border-white/10 bg-slate-950/95 p-4 text-white shadow-lift backdrop-blur-xl lg:rounded-[2rem] lg:border lg:border-white/10">
               <div className="border-b border-white/10 px-2 pb-5 text-center">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-brand-red/40 bg-white/10 p-2 shadow-soft">
