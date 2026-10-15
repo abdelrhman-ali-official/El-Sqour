@@ -1508,8 +1508,9 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <select value={corporateStatusDrafts[requestId] ?? request.status} onChange={(event) => setCorporateStatusDrafts((previous) => ({ ...previous, [requestId]: Number(event.target.value) }))} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none">
-                        {corporateStatusOptions.filter((option) => allowedStatuses.includes(option.value)).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                        {corporateStatusOptions.map((option) => <option key={option.value} value={option.value} disabled={!allowedStatuses.includes(option.value) && option.value !== request.status}>{option.label}</option>)}
                       </select>
+                      <Link to={`/admin/corporate-transportation-requests/${requestId}`} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-red/30 hover:text-brand-red">التفاصيل</Link>
                       <button onClick={() => handleCorporateStatusSave(requestId, request.status)} disabled={busyKey === `corporate-${requestId}`} className="inline-flex items-center gap-2 rounded-2xl bg-brand-red px-4 py-2 text-sm font-semibold text-white shadow-soft disabled:cursor-not-allowed disabled:opacity-70">
                         {busyKey === `corporate-${requestId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
                       </button>

@@ -8,6 +8,7 @@ import MyTripsPage from "./pages/MyTripsPage";
 import Footer from "./sections/Footer";
 import AdminDashboard from "./pages/AdminDashboard";
 import CorporateTransportationRequestPage from "./pages/CorporateTransportationRequestPage";
+import CorporateTransportationRequestDetailsPage from "./pages/CorporateTransportationRequestDetailsPage";
 import { useAuth } from "./context/AuthContext";
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -41,6 +42,14 @@ function AppShell() {
             element={
               <AdminRoute>
                 <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/corporate-transportation-requests/:id"
+            element={
+              <AdminRoute>
+                <CorporateTransportationRequestDetailsPage />
               </AdminRoute>
             }
           />
