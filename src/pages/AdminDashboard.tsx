@@ -746,17 +746,19 @@ export default function AdminDashboard() {
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(255,43,43,0.04),_transparent_34%),linear-gradient(180deg,_#f8fafc_0%,_#eef2f7_100%)] pb-16">
       <div className="absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[linear-gradient(135deg,rgba(15,23,42,1),rgba(15,23,42,0.94),rgba(255,43,43,0.40))]" />
 
-      <div className="relative mx-auto flex max-w-[90rem] flex-col gap-5 px-3 py-4 sm:px-6 lg:px-8">
+      <div dir="rtl" className="relative mx-auto flex max-w-[90rem] flex-col gap-5 px-3 py-4 text-right sm:px-6 lg:px-8">
         <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm lg:hidden">
           <p className="text-sm font-semibold text-brand-dark">تنقل لوحة الإدارة</p>
-          <button type="button" onClick={() => setAdminNavOpen((open) => !open)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-red text-white" aria-label="فتح قائمة لوحة الإدارة">
+          <button type="button" onClick={() => setAdminNavOpen((open) => !open)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-red text-white" aria-label="فتح قائمة لوحة الإدارة" aria-expanded={adminNavOpen}>
             {adminNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
-          <aside className={`${adminNavOpen ? "block" : "hidden"} sticky top-4 z-20 lg:block`}>
-            <div className="rounded-[1.75rem] border border-slate-200/80 bg-white/90 p-3 shadow-soft backdrop-blur">
+        {adminNavOpen ? <button type="button" aria-label="إغلاق قائمة لوحة الإدارة" onClick={() => setAdminNavOpen(false)} className="fixed inset-0 z-30 bg-slate-950/35 lg:hidden" /> : null}
+
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start">
+          <aside className={`${adminNavOpen ? "translate-x-0" : "translate-x-full"} fixed inset-y-0 right-0 z-40 w-72 transition-transform duration-200 lg:sticky lg:top-4 lg:z-20 lg:block lg:w-auto lg:translate-x-0`}>
+            <div className="h-full rounded-l-[1.75rem] border border-slate-200/80 bg-white/95 p-3 shadow-lift backdrop-blur lg:h-auto lg:rounded-[1.75rem] lg:shadow-soft">
               <p className="px-3 pb-3 pt-2 text-xs font-semibold uppercase tracking-wider text-slate-400">أقسام الإدارة</p>
               <nav className="space-y-1">
                 {adminNavItems.map((item) => (
